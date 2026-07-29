@@ -334,18 +334,16 @@ def load_qa():
     name = "deepset/roberta-base-squad2"
     return AutoTokenizer.from_pretrained(name), AutoModelForQuestionAnswering.from_pretrained(name)
 
-@st.cache_resource(show_spinner="⏳ Loading Stable Diffusion (first time is slow)...")
+@st.cache_resource(show_spinner="⏳ Loading tiny Stable Diffusion…")
 def load_sd():
-    # ── your notebook, Step 1, verbatim ──────────────────────────
-    model_id = "runwayml/stable-diffusion-v1-5"
-    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
-    device = "cuda" if torch.cuda.is_available() else "cpu"   # CPU when there's no GPU
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    pipe = StableDiffusionPipeline.from_pretrained(
+        "segmind/small-sd-150k",                                   # lightest real SD (~1GB)
+        torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+    )
     pipe = pipe.to(device)
-    # ── only extra lines: stop CPU from running out of memory ────
-    #    (real image either way — these just keep the VAE decode alive on CPU)
     if device == "cpu":
-        pipe.enable_attention_slicing()
-        pipe.enable_vae_slicing()
+        pipe.enable_attention_slicing()                      # keep CPU RAM low
     return pipe
 
 # ── STEP 6: SMALL HELPERS ────────────────────────────────────
@@ -442,22 +440,21 @@ def feature_stt():
             except Exception as e:
                 st.error(f"Something went wrong: {e}")
 
-# FEATURE 3 — Text → Image
+# FEATURE 3 — Text → Image  (light model, your code, faster)
 def feature_image():
     panel_header("03", "Text → Image",
-                 "Stable Diffusion paints your words. GPU ≈ seconds · CPU ≈ a few minutes (a real image either way).",
+                 "Lightweight Stable Diffusion (segmind/tiny-sd). Fast on GPU, workable on CPU.",
                  "#ff7a6b")
     prompt = st.text_input("🎨 Describe your image:", placeholder="A robot painting on a rooftop at sunset")
-    if not torch.cuda.is_available():
-        st.caption("ℹ️ No GPU here — a **real** image still generates on CPU; expect a few minutes ☕")
     if st.button("🖌️ Generate!", use_container_width=True):
         if not prompt.strip():
             st.warning("Describe something first 🙂")
         else:
-            with st.spinner("Dreaming up your image… (first run also downloads the model)"):
-                pipe = load_sd()                 # Step 1 — cached after the first use
-                image = pipe(prompt).images[0]   # Step 3 — your notebook line, unchanged
-            image.save("generated_image.png")    # Step 4
+            with st.spinner("Painting (light model)…"):
+                pipe = load_sd()
+                image = pipe(prompt, num_inference_steps=20,   # 20 vs 50 = ~2.5× faster
+                             guidance_scale=7.5, width=512, height=512).images[0]
+            image.save("generated_image.png")
             st.image(image, caption=prompt, use_container_width=True)
             st.success("Saved as generated_image.png ✅")
 
