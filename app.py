@@ -334,18 +334,6 @@ def load_qa():
     name = "deepset/roberta-base-squad2"
     return AutoTokenizer.from_pretrained(name), AutoModelForQuestionAnswering.from_pretrained(name)
 
-@st.cache_resource(show_spinner="⏳ Loading tiny Stable Diffusion…")
-def load_sd():
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    pipe = StableDiffusionPipeline.from_pretrained(
-        "segmind/tiny-sd",                                   # lightest real SD (~1GB)
-        torch_dtype=torch.float16 if device == "cuda" else torch.float32,
-    )
-    pipe = pipe.to(device)
-    if device == "cpu":
-        pipe.enable_attention_slicing()                      # keep CPU RAM low
-    return pipe
-
 # ── STEP 6: SMALL HELPERS ────────────────────────────────────
 def panel_header(num, title, desc, color):
     """Draws the colored card header at the top of each feature."""
@@ -440,24 +428,6 @@ def feature_stt():
             except Exception as e:
                 st.error(f"Something went wrong: {e}")
 
-# FEATURE 3 — Text → Image  (light model, your code, faster)
-def feature_image():
-    panel_header("03", "Text → Image",
-                 "Lightweight Stable Diffusion (segmind/tiny-sd). Fast on GPU, workable on CPU.",
-                 "#ff7a6b")
-    prompt = st.text_input("🎨 Describe your image:", placeholder="A robot painting on a rooftop at sunset")
-    if st.button("🖌️ Generate!", use_container_width=True):
-        if not prompt.strip():
-            st.warning("Describe something first 🙂")
-        else:
-            with st.spinner("Painting (light model)…"):
-                pipe = load_sd()
-                image = pipe(prompt, num_inference_steps=20,   # 20 vs 50 = ~2.5× faster
-                             guidance_scale=7.5, width=512, height=512).images[0]
-            image.save("generated_image.png")
-            st.image(image, caption=prompt, use_container_width=True)
-            st.success("Saved as generated_image.png ✅")
-
 # FEATURE 4 — Text Prediction (GPT-2)
 def feature_predict():
     panel_header("04", "Text Prediction", "Give GPT-2 a starting line and it continues the story.", "#7de2a8")
@@ -494,7 +464,7 @@ def feature_qa():
 # ── STEP 8: HEADER (always visible) ──────────────────────────
 st.markdown("""
 <h1 class="title">MULTI-FEATURE <span>CHATBOT</span></h1>
-<p class="subtitle">Five AI powers in one deck — speak it, hear it, paint it, predict it, ask it. Pick a power from the control panel.</p>
+<p class="subtitle">Four AI powers in one deck — speak it, hear it, paint it, predict it, ask it. Pick a power from the control panel.</p>
 """, unsafe_allow_html=True)
 
 # ── STEP 9: SIDEBAR MENU ─────────────────────────────────────
@@ -505,7 +475,6 @@ with st.sidebar:
     menu = {
         "📢 Text → Speech":    feature_tts,
         "🎙️ Speech → Text":    feature_stt,
-        "🎨 Text → Image":     feature_image,
         "✍️ Text Prediction":  feature_predict,
         "🧠 LLM Q&A":          feature_qa,
     }
