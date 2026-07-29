@@ -490,7 +490,7 @@ def feature_qa():
 st.markdown("""
 <div class="topbar">
   <span class="led"></span> Systems online
-  <span class="topbar-right">Day 14 · Colab → Streamlit</span>
+  <span class="topbar-right">Colab → Streamlit</span>
 </div>
 <h1 class="title">MULTI-FEATURE <span>CHATBOT</span></h1>
 <p class="subtitle">Five AI powers in one deck — speak it, hear it, paint it, predict it, ask it. Pick a power from the control panel.</p>
@@ -505,7 +505,7 @@ st.markdown("""
 
 # ── STEP 9: SIDEBAR MENU ─────────────────────────────────────
 with st.sidebar:
-    st.markdown('<div class="side-kicker">Day 14 · AI Lab</div>'
+    st.markdown('<div class="side-kicker">AI Lab</div>'
                 '<div class="side-title">🎛️ CONTROL PANEL</div>', unsafe_allow_html=True)
 
     menu = {
@@ -525,4 +525,4 @@ with st.sidebar:
 menu[choice]()
 
 st.markdown("<br><div style='text-align:center;color:#5d7f7d;font-size:.75rem;letter-spacing:.15em'>"
-            "DAY 14 · BUILT WITH STREAMLIT 🤖</div>", unsafe_allow_html=True)
+            "BUILT WITH STREAMLIT 🤖</div>", unsafe_allow_html=True)
