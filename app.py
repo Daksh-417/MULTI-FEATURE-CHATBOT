@@ -338,7 +338,7 @@ def load_qa():
 def load_sd():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     pipe = StableDiffusionPipeline.from_pretrained(
-        "segmind/small-sd-150k",                                   # lightest real SD (~1GB)
+        "segmind/tiny-sd",                                   # lightest real SD (~1GB)
         torch_dtype=torch.float16 if device == "cuda" else torch.float32,
     )
     pipe = pipe.to(device)
