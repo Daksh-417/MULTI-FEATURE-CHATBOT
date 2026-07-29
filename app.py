@@ -494,13 +494,6 @@ st.markdown("""
 </div>
 <h1 class="title">MULTI-FEATURE <span>CHATBOT</span></h1>
 <p class="subtitle">Five AI powers in one deck — speak it, hear it, paint it, predict it, ask it. Pick a power from the control panel.</p>
-<div class="chips">
-  <span class="chip">📢 gTTS</span>
-  <span class="chip">🎙️ SpeechRecognition</span>
-  <span class="chip">🎨 Stable Diffusion</span>
-  <span class="chip">✍️ GPT-2</span>
-  <span class="chip">🧠 RoBERTa QA</span>
-</div>
 """, unsafe_allow_html=True)
 
 # ── STEP 9: SIDEBAR MENU ─────────────────────────────────────
