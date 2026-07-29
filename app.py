@@ -488,10 +488,6 @@ def feature_qa():
 
 # ── STEP 8: HEADER (always visible) ──────────────────────────
 st.markdown("""
-<div class="topbar">
-  <span class="led"></span> Systems online
-  <span class="topbar-right">Colab → Streamlit</span>
-</div>
 <h1 class="title">MULTI-FEATURE <span>CHATBOT</span></h1>
 <p class="subtitle">Five AI powers in one deck — speak it, hear it, paint it, predict it, ask it. Pick a power from the control panel.</p>
 """, unsafe_allow_html=True)
