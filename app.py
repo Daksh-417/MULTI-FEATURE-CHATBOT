@@ -336,11 +336,17 @@ def load_qa():
 
 @st.cache_resource(show_spinner="⏳ Loading Stable Diffusion (first time is slow)...")
 def load_sd():
-    use_gpu = torch.cuda.is_available()
-    dtype = torch.float16 if use_gpu else torch.float32
-    pipe = StableDiffusionPipeline.from_pretrained(
-        "stable-diffusion-v1-5/stable-diffusion-v1-5", torch_dtype=dtype)
-    return pipe.to("cuda" if use_gpu else "cpu")
+    # ── your notebook, Step 1, verbatim ──────────────────────────
+    model_id = "runwayml/stable-diffusion-v1-5"
+    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float32)
+    device = "cuda" if torch.cuda.is_available() else "cpu"   # CPU when there's no GPU
+    pipe = pipe.to(device)
+    # ── only extra lines: stop CPU from running out of memory ────
+    #    (real image either way — these just keep the VAE decode alive on CPU)
+    if device == "cpu":
+        pipe.enable_attention_slicing()
+        pipe.enable_vae_slicing()
+    return pipe
 
 # ── STEP 6: SMALL HELPERS ────────────────────────────────────
 def panel_header(num, title, desc, color):
@@ -439,19 +445,21 @@ def feature_stt():
 # FEATURE 3 — Text → Image
 def feature_image():
     panel_header("03", "Text → Image",
-                 "Stable Diffusion paints your words. GPU ≈ 10 seconds, CPU ≈ several minutes.",
+                 "Stable Diffusion paints your words. GPU ≈ seconds · CPU ≈ a few minutes (a real image either way).",
                  "#ff7a6b")
     prompt = st.text_input("🎨 Describe your image:", placeholder="A robot painting on a rooftop at sunset")
+    if not torch.cuda.is_available():
+        st.caption("ℹ️ No GPU here — a **real** image still generates on CPU; expect a few minutes ☕")
     if st.button("🖌️ Generate!", use_container_width=True):
         if not prompt.strip():
             st.warning("Describe something first 🙂")
         else:
-            with st.spinner("Dreaming up your image..."):
-                pipe = load_sd()
-                image = pipe(prompt).images[0]
+            with st.spinner("Dreaming up your image… (first run also downloads the model)"):
+                pipe = load_sd()                 # Step 1 — cached after the first use
+                image = pipe(prompt).images[0]   # Step 3 — your notebook line, unchanged
+            image.save("generated_image.png")    # Step 4
             st.image(image, caption=prompt, use_container_width=True)
-            image.save("generated_image.png")
-            st.success("Saved as generated_image.png")
+            st.success("Saved as generated_image.png ✅")
 
 # FEATURE 4 — Text Prediction (GPT-2)
 def feature_predict():
